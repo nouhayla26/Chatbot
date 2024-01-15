@@ -1,0 +1,95 @@
+import json
+import re  
+
+def ask_question(question, validator=None):
+    while True:
+        response = input(question + ": ")
+        if validator is None or validator(response):
+            return response
+        else:
+            print("Réponse invalide, veuillez réessayer.")
+
+def validate_email(email):
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None
+
+def validate_sex(sex):
+    return sex.lower() in ["homme", "femme"]
+
+def validate_age(age):
+    return age.isdigit() and int(age) >= 18
+
+def save_responses(responses):
+    with open("responses.json", "w") as file:
+        json.dump(responses, file)
+    save_responses_txt(responses)  
+
+def save_responses_txt(responses):
+    desktop_path = f"/Users/nouhayla/Desktop/responses.txt"
+    
+    with open(desktop_path, "w") as file:
+        for question, response in responses.items():
+            file.write(f"{question}: {response}\n")
+
+    print(f"Le fichier a été enregistré sur le bureau : {desktop_path}")
+
+def load_responses():
+    try:
+        with open("responses.json", "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+def modify_responses(responses):
+    for question, response in responses.items():
+        print(f"Votre réponse actuelle à '{question}' est: {response}")
+        if ask_question("Voulez-vous modifier cette réponse (oui/non)") == "oui":
+            responses[question] = ask_question(question)
+    save_responses(responses)
+    print("Vos réponses ont été mises à jour.")
+
+def chatbot():
+    responses = load_responses()
+
+    if not responses:
+        personal_info_questions = [
+            ("Quel est votre nom", None), 
+            ("Quel est votre prénom", None), 
+            ("Quelle est votre adresse e-mail", validate_email)
+        ]
+        health_questions = [
+            ("Quel est votre âge", validate_age), 
+            ("Quel est votre sexe", validate_sex), 
+            ("Quel est votre poids actuel (en kg)", None),
+            ("Quelle est votre taille (en cm)", None),
+            
+        ]
+
+        for question, validator in personal_info_questions + health_questions:
+            responses[question] = ask_question(question, validator)
+
+        save_responses(responses)
+        print("Vos réponses ont été sauvegardées.")
+
+    while True:
+        if ask_question("Voulez-vous modifier vos réponses (oui/non)") == "non":
+            break
+        modify_responses(responses)
+
+chatbot()
+
+
+
+###########################################################################################################
+
+import os
+
+file_path = "responses.json"
+
+if os.path.exists(file_path):
+    os.remove(file_path)
+    print(f"Le fichier {file_path} a été supprimé.")
+else:
+    print(f"Le fichier {file_path} n'existe pas.")
+
+    
+###########################################################################################################
