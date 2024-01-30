@@ -1,0 +1,17 @@
+.container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh; /* Set the height to 100% of the viewport height */
+}
+
+.content-container, .chatbot-container {
+    flex: 1;
+}
+
+.content-container {
+    background-color: #f0f8ff; /* Light blue */
+}
+
+.chatbot-container {
+    background-color: #fafad2; /* Light goldenrod yellow */
+}

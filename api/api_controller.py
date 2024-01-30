@@ -1,14 +1,15 @@
 
-from flask import Flask, request, jsonify
-
+from flask import Flask, request, jsonify, render_template
 from utils import *
 from loader import *
 from recommender_system import recommend_best_recipe, update_vector_weight
-import requests
 import logging
 import time
+import chainlit as cl
+import threading
+import subprocess
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=Path.STATIC_FOLDER_PATH.value, template_folder=Path.TEMPLATE_FOLDER_PATH.value)
 
 recommendation_matrix = load_recommendation_matrix()
 df_recipe = load_dataset_recipe()
@@ -25,8 +26,9 @@ def get_param(name, convert_func=int):
 
 
 @app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+def index():
+    return render_template("index.html")
+
 
 @app.route("/recommend", methods=['GET'])
 def recommend():
@@ -52,6 +54,7 @@ def recommend():
     print_red(f"Extracting parameters time: {time.time() - start_time}")
 
     excluded_ingredient_ids, gpt_res_msg = map_recipe_str2id(ingr_vectorizer, ingr_map, excluded_ingredients)
+    print_red(f"Extracting ingredient ID1 time:: {time.time() - start_time}")
     included_ingredient_ids, gpt_res_msg_incl = map_recipe_str2id(ingr_vectorizer, ingr_map, included_ingredients)
     gpt_res_msg += gpt_res_msg_incl
     
@@ -102,25 +105,14 @@ def update_user_weight_api():
     else:
         print_red(f"User matrix not updated")
         return jsonify({'status': 'error'})
-
-
-
-def test():
-    with app.test_client() as client:
-        # Send a POST request to the /recommend route
-        url = '/recommend'
-        data = {
-            'excluded_ingredients': ['salt', 'sugar'],
-            'included_ingredients': ['chicken', 'rice'],
-            'number_recipes': 3
-        }
-        print("post")
-        response = client.post(url, json=data)
-
-        # Return the response data
-        return response.data.decode('utf-8')  # Decode bytes to string if needed
-
     
+
+def run_chainlit():
+    subprocess.Popen(["chainlit", "run", "app.py", "--headless"])
+
+
 if __name__ == '__main__':
+    run_chainlit()
     app.run(debug=True)
-    print(test())
+    
+    
