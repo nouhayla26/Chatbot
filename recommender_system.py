@@ -1,11 +1,8 @@
-import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-import ast
 
 #constants class
 from constants import Debug
-from utils import load_recommendation_matrix, load_user_matrix, load_dataset_recipe, load_ingr_map
 
 
 def select_best_recipe(recommendation_matrix, user_array, n=50):
@@ -23,21 +20,19 @@ def select_best_recipe(recommendation_matrix, user_array, n=50):
     return recommendation_matrix.iloc[n_best_indices.tolist()]
 
 
-def update_vector_weight_2(user_vector, recommendation_matrix, ingr_ids, increase=True):
-    #function to update the user vector based on the ingredient ids (weight update = 1/4 of the euclidean distance between then nearest boundary (0 or 1))
-    column_ids = [recommendation_matrix.columns.get_loc(col) for col in np.array(ingr_ids, dtype=str)]
-    for col_id in column_ids:
-        if increase:
-            boundary_diff = (1 - user_vector[col_id]) / 4
-            user_vector[col_id] = min(1, user_vector[col_id] + boundary_diff)
-        else:
-            boundary_diff = user_vector[col_id] / 4
-            user_vector[col_id] = max(0, user_vector[col_id] - boundary_diff)
-    return user_vector
-
-
-
 def update_vector_weight(user_vector, recommendation_matrix, ingr_ids, increase=True):
+    """Update the user vector based on the ingredient ids 
+        (weight update = 1/4 of the euclidean distance between then nearest boundary (0 or 1))
+
+    Args:
+        user_vector (pd.Dataframe): user vector of shape (1, n_ingredients)
+        recommendation_matrix (pd.Dataframe): recommendation matrix of shape (n_recipes, n_ingredients)
+        ingr_ids (list(int)): list of ingredient ids to update
+        increase (bool, optional): Increase or decrease user matrix weights. Defaults to True.
+
+    Returns:
+        pd.Dataframe: updated user vector
+    """
     # Convert ingr_ids to numpy array
     ingr_ids = np.array(ingr_ids, dtype=str)
     

@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify
 
 from utils import *
 from loader import *
-from recommender_system import recommend_best_recipe
+from recommender_system import recommend_best_recipe, update_vector_weight
 import requests
 import logging
 import time
@@ -83,12 +83,25 @@ def recommend():
     
 
 @app.route("/update_user_weight", methods=['POST'])
-def update_user_weight(increase_weight=True):
-    #ADD ingredient list conversion
-    user_matrix = load_user_matrix()
-    user_matrix = update_user_weight(user_matrix, request.json['recipe_id'], request.json['weight'])
-    save_user_matrix(user_matrix)
-    return jsonify({'status': 'success'})
+def update_user_weight_api():
+    
+    start_time = time.time()
+    data = request.get_json()
+    increase_weight = data.get('increase_weight')
+    ingr_ids = data.get('ingr_str', [])  # Get 'ingr_str' from JSON body
+    
+    print_red(f"Update user weight: {increase_weight} {ingr_ids}")
+    
+    if ingr_ids and increase_weight:
+        user_matrix = load_user_matrix()
+        ingr_ids = map_recipe_str2id(ingr_vectorizer, ingr_map, ingr_ids)[0]
+        user_matrix = update_vector_weight(user_matrix, recommendation_matrix, ingr_ids, increase=increase_weight)
+        save_user_matrix(user_matrix)
+        print_green(f"Update user weight time: {time.time() - start_time}")
+        return jsonify({'status': 'success'})
+    else:
+        print_red(f"User matrix not updated")
+        return jsonify({'status': 'error'})
 
 
 
