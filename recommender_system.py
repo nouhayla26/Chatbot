@@ -161,8 +161,6 @@ def recommend_best_recipe(user_vector,
                                        excluded_ingredient_ids=excluded_ingredient_ids, 
                                        included_ingredient_ids=included_ingredient_ids)
     
-    print("exclude", excluded_ingredient_ids)
-    print("include", included_ingredient_ids)
     
     #Compute the cosine similarity between the user vector and the recipe matrix to select best recipes
     if random_picking and number_recipes > 1:

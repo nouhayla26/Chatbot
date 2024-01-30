@@ -92,36 +92,6 @@ def init_ingr_vectorizer(ingr_map):
     ingr_vectorizer.fit(ingr_map['replaced'])
     
     return ingr_vectorizer
-    
-
-def map_recipe_str2id_2(ingr_map, input_str, threshold=Treshold.COS_SIM_RECIPE.value, verbose=Debug.VERBOSE.value):
-    
-    input_str = preprocess_text(input_str)
-    # Fit and transform the input string and food strings
-    vectorizer = CountVectorizer()
-    corpus = [input_str] + list(ingr_map['replaced'])
-    X = vectorizer.fit_transform(corpus)
-    
-    # Calculate cosine similarity between input string and food strings
-    similarities = cosine_similarity(X)[0][1:]
-    
-    # Find the index of the food string with the highest similarity
-    max_similarity_index = similarities.argmax()
-    if verbose:
-        print("[map_recipe_str2id] input: ", input_str)
-        
-    # Check if the similarity is above the threshold
-    if similarities[max_similarity_index] >= threshold:
-        # Return the corresponding food ID
-        closest_food_id = ingr_map.iloc[max_similarity_index]['id']
-        if verbose:
-            print_green(f"map_recipe_str2id] Found : {ingr_map.iloc[max_similarity_index]['replaced']} percent: {similarities[max_similarity_index]}")
-        return closest_food_id
-    else:
-        # No food name is close enough
-        if verbose:
-            print_red("map_recipe_str2id] No matching recipe found")
-        return None
 
 
 def map_recipe_str2id(ingr_vectorizer, ingr_map, input_strs, threshold=Treshold.COS_SIM_RECIPE.value, verbose=Debug.VERBOSE.value):

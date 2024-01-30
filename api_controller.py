@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify
 
 from utils import *
+from loader import *
 from recommender_system import recommend_best_recipe
 import requests
 import logging
