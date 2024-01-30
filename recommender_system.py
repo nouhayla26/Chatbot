@@ -5,7 +5,7 @@ import ast
 
 #constants class
 from constants import Debug
-from utils import load_recommendation_matrix, load_user_matrix, load_dataset_recipe
+from utils import load_recommendation_matrix, load_user_matrix, load_dataset_recipe, load_ingr_map
 
 
 def select_best_recipe(recommendation_matrix, user_array, n=50):
@@ -18,12 +18,12 @@ def select_best_recipe(recommendation_matrix, user_array, n=50):
         recipe_index array(int): index of the best recipes (shape (1,n))
     """
     cos_sim = cosine_similarity([user_array], recommendation_matrix)
-    sorted_indices = np.argsort(cos_sim[0])  # Access the first row of cos_sim
-    n_best_indices = sorted_indices[-n:]
-    return recommendation_matrix.iloc[n_best_indices]
+    n_best_indices = np.argsort(cos_sim[0])[-n:]  # Access the first row of cos_sim
+    
+    return recommendation_matrix.iloc[n_best_indices.tolist()]
 
 
-def update_vector_weight(user_vector, recommendation_matrix, ingr_ids, increase=True):
+def update_vector_weight_2(user_vector, recommendation_matrix, ingr_ids, increase=True):
     #function to update the user vector based on the ingredient ids (weight update = 1/4 of the euclidean distance between then nearest boundary (0 or 1))
     column_ids = [recommendation_matrix.columns.get_loc(col) for col in np.array(ingr_ids, dtype=str)]
     for col_id in column_ids:
@@ -34,6 +34,26 @@ def update_vector_weight(user_vector, recommendation_matrix, ingr_ids, increase=
             boundary_diff = user_vector[col_id] / 4
             user_vector[col_id] = max(0, user_vector[col_id] - boundary_diff)
     return user_vector
+
+
+
+def update_vector_weight(user_vector, recommendation_matrix, ingr_ids, increase=True):
+    # Convert ingr_ids to numpy array
+    ingr_ids = np.array(ingr_ids, dtype=str)
+    
+    # Get column indices
+    column_ids = recommendation_matrix.columns.get_indexer(ingr_ids)
+    
+    # Compute boundary_diff
+    if increase:
+        boundary_diff = (1 - user_vector[column_ids]) / 4
+        user_vector[column_ids] = np.minimum(1, user_vector[column_ids] + boundary_diff)
+    else:
+        boundary_diff = user_vector[column_ids] / 4
+        user_vector[column_ids] = np.maximum(0, user_vector[column_ids] - boundary_diff)
+    
+    return user_vector
+
 
        
 def filter_recipe(df_recipe, 
@@ -64,44 +84,40 @@ def filter_recipe(df_recipe,
         Index(id): list of id of filtered recipe (if return_id = True)
     """
     
-    df_recipe_filtered = df_recipe.copy()
-    
     if max_ingredients is not None:
         if verbose:
             print('Filtering recipes with less than {} ingredients'.format(max_ingredients))
-        df_recipe_filtered = df_recipe_filtered[df_recipe_filtered['n_ingredients'] <= max_ingredients]
+        df_recipe = df_recipe[df_recipe['n_ingredients'] <= max_ingredients]
         
     if max_steps is not None:
         if verbose:
             print('Filtering recipes with less than {} steps'.format(max_steps))
-        df_recipe_filtered = df_recipe_filtered[df_recipe_filtered['n_steps'] <= max_steps]
+        df_recipe = df_recipe[df_recipe['n_steps'] <= max_steps]
         
     if max_calories is not None:
         if verbose:
             print('Filtering recipes with less than {} calories'.format(max_calories))
-        df_recipe_filtered = df_recipe_filtered[df_recipe_filtered['calories'] <= max_calories]
+        df_recipe = df_recipe[df_recipe['calories'] <= max_calories]
         
     if max_minutes is not None:
         if verbose:
             print('Filtering recipes with less than {} minutes'.format(max_minutes))
-        df_recipe_filtered = df_recipe_filtered[df_recipe_filtered['minutes'] <= max_minutes]
+        df_recipe = df_recipe[df_recipe['minutes'] <= max_minutes]
         
     if excluded_ingredient_ids is not None:
-        for excluded_id in excluded_ingredient_ids:
-            if verbose:
-                print('Filtering recipes excluding ingredient {}'.format(excluded_id))
-            df_recipe_filtered = df_recipe_filtered[~df_recipe_filtered['ingredient_ids'].apply(lambda x: excluded_id in ast.literal_eval(x))]
+        if verbose:
+            print('Filtering recipes excluding ingredients {}'.format(excluded_ingredient_ids))
+        df_recipe = df_recipe[~df_recipe['ingredient_ids'].apply(lambda x: any(ingredient in x for ingredient in excluded_ingredient_ids))]
         
     if included_ingredient_ids is not None:
-        for included_id in included_ingredient_ids:
-            if verbose:
-                print('Filtering recipes including ingredient {}'.format(included_id))
-            df_recipe_filtered = df_recipe_filtered[df_recipe_filtered['ingredient_ids'].apply(lambda x: included_id in ast.literal_eval(x))]
+        if verbose:
+            print('Filtering recipes including ingredients {}'.format(included_ingredient_ids))
+        df_recipe = df_recipe[df_recipe['ingredient_ids'].apply(lambda x: all(ingredient in x for ingredient in included_ingredient_ids))]
             
     if return_id:
-        return df_recipe_filtered['id']
+        return df_recipe['id']
     else:
-        return df_recipe_filtered
+        return df_recipe
     
 
 def recommend_best_recipe(user_vector, 
@@ -158,10 +174,15 @@ def recommend_best_recipe(user_vector,
         # No random picking, select the best n recipes
         recipes = select_best_recipe(recommendation_matrix.loc[df_recipe_filtered], user_vector, n=number_recipes)
 
+    
     return df_recipe[df_recipe['id'].isin(recipes.index)]
+    
+    
 
 
-    """
+"""
+if __name__ == '__main__':
+    
     recommendation_matrix = load_recommendation_matrix()
     user_matrix = load_user_matrix()
     dataset_recipe = load_dataset_recipe()
@@ -171,10 +192,7 @@ def recommend_best_recipe(user_vector,
     print(res['ingredient_ids'].iloc[0])
     print(res.head())
     
+    user_matrix = update_vector_weight(user_matrix, recommendation_matrix, [1257, 7655, 6270], increase=True)
     
-    user_matrix = update_vector_weight(user_matrix, [1257, 7655, 6270], increase=True)
-    
-    print(recommand_best_recipe(user_matrix, dataset_recipe, recommendation_matrix, included_ingredient_ids=[1257, 7655, 6270], max_calories=500, number_recipes=5))
-    
-    print(load_recommendation_matrix().head())
-    """
+    print(recommend_best_recipe(user_matrix, dataset_recipe, recommendation_matrix, included_ingredient_ids=[1257, 7655, 6270], max_calories=500, number_recipes=5))
+"""

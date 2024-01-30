@@ -12,9 +12,16 @@ app = Flask(__name__)
 recommendation_matrix = load_recommendation_matrix()
 df_recipe = load_dataset_recipe()
 ingr_map = load_ingr_map()
+ingr_vectorizer = init_ingr_vectorizer(ingr_map)
 
 app.logger.addHandler(logging.StreamHandler())
 app.logger.setLevel(logging.INFO)
+
+
+def get_param(name, convert_func=int):
+    value = request.args.get(name)
+    return convert_func(value) if value is not None else None
+
 
 @app.route("/")
 def hello_world():
@@ -24,24 +31,15 @@ def hello_world():
 def recommend():
     start_time = time.time()
     
-    max_ingredients = request.args.get('max_ingredients')
-    max_ingredients = int(max_ingredients) if max_ingredients is not None else None
+    max_ingredients = get_param('max_ingredients')
+    max_steps = get_param('max_steps')
+    max_minutes = get_param('max_minutes')
+    max_calories = get_param('max_calories')
+    number_recipes = get_param('number_recipes') or 1
 
-    max_steps = request.args.get('max_steps')
-    max_steps = int(max_steps) if max_steps is not None else None
-
-    max_minutes = request.args.get('max_minutes')
-    max_minutes = int(max_minutes) if max_minutes is not None else None
-
-    max_calories = request.args.get('max_calories')
-    max_calories = int(max_calories) if max_calories is not None else None
-
-    excluded_ingredients = request.args.getlist('excluded_ingredients') or None
-    included_ingredients = request.args.getlist('included_ingredients') or None
-
-    number_recipes = request.args.get('number_recipes', default=1)
-    number_recipes = int(number_recipes)
-
+    excluded_ingredients = request.args.getlist('excluded_ingredients') or []
+    included_ingredients = request.args.getlist('included_ingredients') or []
+    
     print("Max Ingredients:", max_ingredients)
     print("Max Steps:", max_steps)
     print("Max Minutes:", max_minutes)
@@ -50,42 +48,14 @@ def recommend():
     print("Included Ingredients:", included_ingredients)
     print("Number of Recipes:", number_recipes)
     
-    print_green("Request received")
-    
-    print("Extracting parameters time:", time.time() - start_time)
+    print_red(f"Extracting parameters time: {time.time() - start_time}")
 
+    excluded_ingredient_ids, gpt_res_msg = map_recipe_str2id(ingr_vectorizer, ingr_map, excluded_ingredients)
+    included_ingredient_ids, gpt_res_msg_incl = map_recipe_str2id(ingr_vectorizer, ingr_map, included_ingredients)
+    gpt_res_msg += gpt_res_msg_incl
     
-    gpt_res_msg = ""
-    excluded_ingredient_ids = None
-    included_ingredient_ids = None
     
-    if excluded_ingredients:
-        excluded_ingredient_ids = []
-        for ingr in excluded_ingredients:
-            ingr_id = map_recipe_str2id(ingr_map, ingr)
-            if ingr_id:
-                if Debug.VERBOSE.value:
-                    print_green("Ingredient {} found in our database".format(ingr))
-                excluded_ingredient_ids.append(ingr_id)
-            else:
-                if Debug.VERBOSE.value:
-                    print_red("Ingredient {} not found in our database".format(ingr))
-                gpt_res_msg += "Ingredient {} not found in our database. ".format(ingr)
-            
-    if included_ingredients:
-        included_ingredient_ids = []
-        for ingr in included_ingredients:
-            ingr_id = map_recipe_str2id(ingr_map, ingr)
-            if ingr_id:
-                if Debug.VERBOSE.value:
-                    print_green("Ingredient {} found in our database".format(ingr))
-                included_ingredient_ids.append(ingr_id)
-            else:
-                if Debug.VERBOSE.value:
-                    print_red("Ingredient {} not found in our database".format(ingr))
-                gpt_res_msg += "Ingredient {} not found in our database. ".format(ingr)
-    
-    print("Extracting ingredient IDs time:", time.time() - start_time)
+    print_red(f"Extracting ingredient IDs time:: {time.time() - start_time}")
     
     user_matrix = load_user_matrix()
     recommended_recipes = recommend_best_recipe(user_matrix, 
@@ -99,7 +69,7 @@ def recommend():
                                                included_ingredient_ids, 
                                                number_recipes)
     
-    print("Loading user matrix and recommending recipes time:", time.time() - start_time)
+    print_red(f"Loading user matrix and recommending recipes time: {time.time() - start_time}")
     
     res_chatbot = recommended_recipes[['name', 'minutes', 'n_steps', 'ingredients', 'n_ingredients', 'calories']].to_json(orient='records')
     
@@ -135,6 +105,7 @@ def test():
 
         # Return the response data
         return response.data.decode('utf-8')  # Decode bytes to string if needed
+
     
 if __name__ == '__main__':
     app.run(debug=True)
