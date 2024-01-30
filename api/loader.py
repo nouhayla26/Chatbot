@@ -15,7 +15,7 @@ def load_recommendation_matrix(verbose=Debug.VERBOSE.value):
     if verbose:
         print_green('Loading recommendation matrix')
 
-    np_matrix = sparse.load_npz("recipe_ingr_matrix.npz").toarray()
+    np_matrix = sparse.load_npz(Path.RECOMMENDER_MATRIX_PATH.value).toarray()
     
     with open(Path.DF_METATATA_PATH.value, 'r') as f:
         df_metadata = json.load(f)
