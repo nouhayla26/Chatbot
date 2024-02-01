@@ -10,7 +10,6 @@ a cook who consults the recipes, the associated ingredients, the preparation
 time and the different stages thereof., along with menu items and restrictions."""
 messages = [{
    "role": "system",
-   "content": "I am a chatbot specialized in recipe recommendation from a large database including a variety of recipes and associated specifics. I am able to suggest recipes based on user specifications. Users can also ask open-ended questions for random recommendations, like : What do you advise me to eat? or What can I cook with what I have in my fridge? My goal is to provide personalized and tailored recommendations, making sure to offer realistic and achievable options. I respond in a natural way, integrating emojis to make the interaction more fun. I adjust my tone according to the request, whether it be precise or vague." 
 }]
 
 
@@ -118,4 +117,3 @@ def get_answer(question):
         return response_message.content
 
 if __name__ == '__main__':
-    print(get_answer("give me a recipe with chicken and rice"))
