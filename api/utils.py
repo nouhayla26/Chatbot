@@ -1,62 +1,8 @@
-import pickle
-import pandas as pd
-import numpy as np
-from scipy import sparse
-import json
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
-import ast
 
 #constants class
 from constants import *
-
-
-def load_recommendation_matrix(verbose=Debug.VERBOSE.value):
-    if verbose:
-        print('Loading recommendation matrix')
-
-    np_matrix = sparse.load_npz("recipe_ingr_matrix.npz").toarray()
-    
-    with open(Path.DF_METATATA_PATH.value, 'r') as f:
-        df_metadata = json.load(f)
-        
-    recommendation_matrix = pd.DataFrame(np_matrix, columns=df_metadata['columns'], index=df_metadata['index'])
-    
-    return recommendation_matrix
-
-
-def load_user_matrix(verbose=Debug.VERBOSE.value):
-    if verbose:
-        print('Loading user matrix')
-    with open(Path.USER_MATRIX_PATH.value, 'rb') as handle:
-        user_matrix = pickle.load(handle)
-    return user_matrix
-
-
-def load_dataset_recipe(verbose=Debug.VERBOSE.value):
-    if verbose:
-        print('Loading dataset recipe')
-    with open(Path.DATASET_RECIPE_PATH.value, 'rb') as handle:
-        user_matrix = pickle.load(handle)
-        
-    user_matrix['ingredient_ids'] = user_matrix['ingredient_ids'].apply(ast.literal_eval)
-    return user_matrix
-
-
-def save_user_matrix(user_matrix, verbose=Debug.VERBOSE.value):
-    if verbose:
-        print('Saving user matrix')
-    with open(Path.USER_MATRIX_PATH.value, 'wb') as handle:
-        pickle.dump(user_matrix, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        
-        
-def load_ingr_map(verbose=Debug.VERBOSE.value):
-    if verbose:
-        print('Loading ingr map')
-    ingr_map = pd.read_pickle(Path.INGR_MAP_PATH.value)
-    return ingr_map
-
 
 def print_green(message):
     print("\033[92m" + message + "\033[0m")
@@ -84,14 +30,6 @@ def map_recipe_id2str(ingr_map, recipe_id):
         return None
     #return maching string if id is found
     return filtered['replaced'].values[0]
-
-
-def init_ingr_vectorizer(ingr_map):
-
-    ingr_vectorizer = CountVectorizer()
-    ingr_vectorizer.fit(ingr_map['replaced'])
-    
-    return ingr_vectorizer
 
 
 def map_recipe_str2id(ingr_vectorizer, ingr_map, input_strs, threshold=Treshold.COS_SIM_RECIPE.value, verbose=Debug.VERBOSE.value):
