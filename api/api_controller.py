@@ -78,7 +78,7 @@ def recommend():
     #res_ui = res_chatbot = recommended_recipes[['name', 'minutes', 'n_steps', 'ingredients', 'n_ingredients', 'calories', 'steps']]
     
     res_chatbot = recommended_recipes[['name', 'minutes', 'n_steps', 'ingredients', 'n_ingredients', 'calories']].to_json(orient='records')
-    
+    print_green(res_chatbot)
     #TO DO
     #res_rachbot in json params
     res_chatbot += gpt_res_msg 

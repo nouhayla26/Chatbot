@@ -1,6 +1,6 @@
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="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")
 import json
 from chatbot_functions import recipes_recommender
 
@@ -17,6 +17,7 @@ messages = [{
 def get_answer(question):
     question = str(question) + "\n Response 500 chars maximum: generate short reply. No non-food Qs allowed."
     messages.append({'role': 'user', 'content': question})
+    print("[DEBUG] messages: ", question)
     functions = [
     {
         "name": "recipes_recommender",
@@ -69,7 +70,10 @@ def get_answer(question):
     functions=functions,
     function_call="auto")
     
+    print("[res]", response)
+    
     response_message = response.choices[0].message
+    
 
     if response_message.function_call:
         available_functions = {

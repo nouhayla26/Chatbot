@@ -4,6 +4,9 @@ import time
 def test_recommender():
     url = 'http://127.0.0.1:5000/recommend'
     params = {
+        'excluded_ingredients': ['salt', 'sugar'],
+        'included_ingredients': ['chicken', 'rice'],
+        'number_recipes': 3
     }
 
     # Capture the start time
@@ -53,7 +56,7 @@ def test_update_user_weight():
     else:
         # Handle unsuccessful response
         return f"Error: {response.status_code}", None
-
+    
 
 if __name__ == "__main__":
     response_text, elapsed_time = test_recommender()

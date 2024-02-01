@@ -12,9 +12,9 @@ What do you want to eat ? 👩‍🍳👨🏾‍🍳               """).send()
 
 @cl.on_message
 async def main(message: str):
-  
-   answer = openai_code.get_answer(message)
-   # Send a response back to the user
-   await cl.Message(author="Chatbot",
-     content=answer,
-   ).send()
+    print(message.content)
+    answer = openai_code.get_answer(message.content)
+    # Send a response back to the user
+    await cl.Message(author="Chatbot",
+        content=answer,
+    ).send()
