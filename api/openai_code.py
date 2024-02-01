@@ -1,6 +1,6 @@
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="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")
 import json
 from chatbot_functions import recipes_recommender
 

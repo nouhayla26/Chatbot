@@ -9,7 +9,7 @@ def run_script(script_name):
     
 def run_chainlit():
     if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
-        subprocess.Popen(["chainlit", "run", Path.CHATBOT_PROCESS_PATH.value , "--headless"])
+        subprocess.Popen(["chainlit", "run", Path.CHATBOT_PROCESS_PATH.value , "-w", "--headless"])
 
 if __name__ == '__main__':
     # Start the chatbot_process.py script in a separate thread
