@@ -1,13 +1,16 @@
+chatbot_function.py (Nathan Version)
+
 import pandas as pd 
 import numpy as np
 import spacy
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
+import requests
+import time
 
 # We import data 
-df_recipes = pd.read_csv('/Users/nathanwandji/Downloads/recipes_test_data.csv')
+#df_recipes = pd.read_csv('/Users/nathanwandji/Downloads/recipes_test_data.csv')
 
 
 
@@ -18,7 +21,6 @@ def recipes_list_function(df):
     #We delete doublons 
     distinct_recipe_names = list(set(recipe_names))
     return distinct_recipe_names
-
 # List of recipes 
 recipes_list = recipes_list_function(df_recipes)
 

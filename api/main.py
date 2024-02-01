@@ -1,5 +1,5 @@
 import chainlit as cl
-import api.openai_code as openai_code
+import openai_code 
 
 @cl.on_chat_start
 async def start():
@@ -17,4 +17,4 @@ async def main(message: str):
    # Send a response back to the user
    await cl.Message(author="Chatbot",
      content=answer,
-   ).send()
+   ).send()s
