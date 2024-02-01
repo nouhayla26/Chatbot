@@ -1,6 +1,6 @@
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="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")
 import json
 from chatbot_functions import recipes_recommender
 
@@ -49,13 +49,16 @@ def get_answer(question):
                     },
                     "description": "list of ingredients to exclude from the recipe. Defaults to None.",
                 },
-
                 "included_ingredient" : {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
                     "description": "list of ingredients to include in the recipe. Defaults to None.",
+                },
+                "number_recipes": {
+                    "type": "integer",
+                    "description": "number of recipe to fetch. Defaults to None.",
                 },
 
             },
