@@ -1,21 +1,17 @@
-import openai
+from openai import OpenAI
+
+client = OpenAI(api_key="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")
 import json
-from api.chatbot_functions import recipes_recommender
+from chatbot_functions import recipes_recommender
 
-
-# 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
-openai.api_key = "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"
-
-
+# Configuration de la clé API OpenAI
 """Content of the initial message prompt, describing the role and tasks of 
 a cook who consults the recipes, the associated ingredients, the preparation 
 time and the different stages thereof., along with menu items and restrictions."""
 messages = [{
    "role": "system",
-   "content": "I am a chatbot specialized in recipe recommendation from a large database including a variety of recipes and associated specifics. I am able to suggest recipes based on user specifications, such as such as maximum ingredients, steps, preparation time, calories, ingredients to exclude or include, and number of recipes desired. Users can also ask open-ended questions for random recommendations, like : What do you advise me to eat? or What can I cook with what I have in my fridge? My goal is to provide personalized and tailored recommendations, making sure to offer realistic and achievable options. I respond in a natural way, integrating emojis to make the interaction more fun. I adjust my tone according to the request, whether it be precise or vague." 
+   "content": "I am a chatbot specialized in recipe recommendation from a large database including a variety of recipes and associated specifics. I am able to suggest recipes based on user specifications. Users can also ask open-ended questions for random recommendations, like : What do you advise me to eat? or What can I cook with what I have in my fridge? My goal is to provide personalized and tailored recommendations, making sure to offer realistic and achievable options. I respond in a natural way, integrating emojis to make the interaction more fun. I adjust my tone according to the request, whether it be precise or vague." 
 }]
-
-
 
 
 
@@ -25,7 +21,7 @@ def get_answer(question):
     functions = [
     {
         "name": "recipes_recommender",
-        "description": """Function to get recipe recommendations based on user specifics (maximum ingredients, steps, preparation time, calories, ingredients to exclude or include and number of desired recipes). This feature also offers user-unspecific responses for random recommendations.""",
+        "description": """Function to get recipe recommendations based on user specifics (maximum ingredients, steps, preparation time, calories, ingredients to exclude or include and number of desired recipes). All theses specifics are optional, and we can recommend without it.  This function also offers user-unspecific responses for random recommendations.""",
         "parameters": {
             "type": "object",
             "properties": {
@@ -68,15 +64,13 @@ def get_answer(question):
  
     # We can Add other functions as needed here !!!
 ]
+
+    response = client.chat.completions.create(model="gpt-3.5-turbo-1106",
+    messages=messages,
+    functions=functions,
+    function_call="auto")
     
-
-
-    response = openai.chat.completions.create(model="gpt-3.5-turbo-1106",
-                                                messages=messages,
-                                                functions=functions,
-                                                function_call="auto")
     response_message = response.choices[0].message
-
 
     if response_message.function_call:
         available_functions = {
@@ -86,13 +80,12 @@ def get_answer(question):
         function_name = response_message.function_call.name
         print(function_name)
 
-        fuction_to_call = available_functions[function_name]
+        function_to_call = available_functions[function_name]
         function_args = json.loads(response_message.function_call.arguments)
         print(function_args)
 
-        function_response = fuction_to_call(**function_args)
+        function_response = function_to_call(**function_args)
         print(function_response)
-
 
         messages.append(response_message)
         messages.append(
@@ -103,24 +96,19 @@ def get_answer(question):
             }
         )
 
-
-        second_response = openai.chat.completions.create(model="gpt-3.5-turbo-1106",
-                                                            messages=messages,
-                                                            temperature=0)  # get a new response from GPT where it can see the function response
+        second_response = client.chat.completions.create(model="gpt-3.5-turbo-1106",
+        messages=messages,
+        temperature=0)  # get a new response from GPT where it can see the function response
         
         messages.append({"role": "assistant", "content": second_response.choices[0].message.content})
         print(second_response.usage)
 
         return second_response.choices[0].message.content
     else:
-        messages.append({"role": "assistant", "content": response_message["content"]})
+        messages.append({"role": "assistant", "content": response_message.content})
         print(response.usage)
         print(messages)
-        return response_message["content"]       
-
-
+        return response_message.content
 
 if __name__ == '__main__':
     print(get_answer("give me a recipe with chicken and rice"))
-   
-    
