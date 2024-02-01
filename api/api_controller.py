@@ -75,9 +75,15 @@ def recommend():
     
     print_red(f"Loading user matrix and recommending recipes time: {time.time() - start_time}")
     
+    #res_ui = res_chatbot = recommended_recipes[['name', 'minutes', 'n_steps', 'ingredients', 'n_ingredients', 'calories', 'steps']]
+    
     res_chatbot = recommended_recipes[['name', 'minutes', 'n_steps', 'ingredients', 'n_ingredients', 'calories']].to_json(orient='records')
     
-    res_chatbot += gpt_res_msg  
+    #TO DO
+    #res_rachbot in json params
+    res_chatbot += gpt_res_msg 
+    
+    
     #------------------TO DO UPDATE RECIPE UI------------------
     #update_recipe_UI(recommended_recipes)
     #res_UI = recommended_recipes[['name', 'minutes', 'n_steps', 'ingredients', 'n_ingredients', 'calories', 'steps']].to_json(orient='records') 
@@ -105,14 +111,9 @@ def update_user_weight_api():
     else:
         print_red(f"User matrix not updated")
         return jsonify({'status': 'error'})
-    
-
-def run_chainlit():
-    subprocess.Popen(["chainlit", "run", "app.py", "--headless"])
 
 
 if __name__ == '__main__':
-    run_chainlit()
     app.run(debug=True)
     
     

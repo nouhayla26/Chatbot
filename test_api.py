@@ -4,7 +4,7 @@ import time
 def test_recommender():
     url = 'http://127.0.0.1:5000/recommend'
     params = {
-        'excluded_ingredients': ['salt', 'sugar'],
+        'excluded_ingredients': ['salt', 'sugar', 'ehfuizefhz'],
         'included_ingredients': ['chicken', 'rice'],
         'number_recipes': 3
     }
