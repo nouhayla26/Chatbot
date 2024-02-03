@@ -1,5 +1,5 @@
 import chainlit as cl
-import openai_code 
+import openai_code
 
 @cl.on_chat_start
 async def start():
