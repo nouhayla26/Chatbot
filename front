@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recettes de Cuisine</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+  }
+
+  .header {
+    text-align: center;
+    font-size: 2.5em;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin: 40px 0;
+    padding: 20px 0;
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(1,1,1,0.7);
+  }
+
+  .tile img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .recipe-info {
+    padding: 10px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .recipe-title {
+    font-size: 1.2em;
+  }
+
+  .ingredients {
+    font-size: 0.9em;
+    color: #666;
+  }
+
+  .calories {
+    font-size: 0.9em;
+    color: #333;
+    margin-top: auto;
+  }
+
+  .like-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 24px; /* Taille de l'emoji cœur */
+    outline: none; /* Supprime le contour lors du clic */
+  }
+
+  .liked {
+    color: red;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  Nous vous recommandons:
+</div>
+
+<div class="container" id="recipeContainer">
+  <div class="tile">
+    <button class="like-button" onclick="toggleLike(event)">❤️</button>
+    <img src="/Users/aziz/Desktop/gratin.jpeg" alt="Gratin dauphinois">
+    <div class="recipe-info">
+      <div class="recipe-title">Gratin dauphinois</div>
+      <div class="ingredients">Des pommes de terre, de préférence des variétés à chair ferme comme les Russet
+De la crème pure
+Du lait entier
+Du beurre
+De l'ail
+Du sel, souvent de la fleur de sel pour la saveur
+Du poivre fraîchement moulu
+De la muscade râpée</div>
+      <div class="calories">Calories: 500</div>
+    </div>
+  </div>
+
+  <div class="tile">
+    <button class="like-button" onclick="toggleLike(event)">❤️</button>
+    <img src="/Users/aziz/Desktop/pizza.jpeg" alt="Pizza nature">
+    <div class="recipe-info">
+      <div class="recipe-title">Pizza nature</div>
+      <div class="ingredients">Pâte à pizza
+Sauce tomate
+Mozzarella
+Huile d'olive
+Basilic frais</div>
+      <div class="calories">Calories: 450</div>
+    </div>
+  </div>
+
+  <div class="tile">
+    <button class="like-button" onclick="toggleLike(event)">❤️</button>
+    <img src="/Users/aziz/Desktop/soupe.jpeg" alt="Soupe légume">
+    <div class="recipe-info">
+      <div class="recipe-title">Soupe légume</div>
+      <div class="ingredients">Carottes
+Céleri
+Oignons
+Pommes de terre
+Tomates (fraîches ou en conserve)
+Courgettes
+Poireaux
+Chou
+Bouillon de légumes ou de poulet
+Ail
+Herbes aromatiques comme le thym, le laurier, le persil
+Sel et poivre</div>
+      <div class="calories">Calories: 600</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function adjustTilesDisplay() {
+    const container = document.getElementById('recipeContainer');
+    const tiles = container.getElementsByClassName('tile');
+    const tileCount = tiles.length;
+
+    if (tileCount === 1) {
+      container.style.gridTemplateColumns = '1fr';
+    } else if (tileCount > 1 && tileCount <= 4) {
+      container.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    } else {
+      container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+    }
+  }
+
+  function toggleLike(event) {
+    event.target.classList.toggle('liked');
+  }
+
+  adjustTilesDisplay();
+</script>
+
+</body>
+</html>
+
